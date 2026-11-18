@@ -9,7 +9,7 @@
   html, body { margin: 0; height: 100%; overflow: hidden; background: #141c22; color: #fff;
     font-family: 'Noto Sans KR', system-ui, sans-serif; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
   canvas { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
-  @media (pointer: fine) { canvas { cursor: none; } }
+  @media (pointer: fine) { canvas { cursor: grab; } canvas:active { cursor: grabbing; } }
   .brand { position: fixed; top: calc(14px + env(safe-area-inset-top)); left: calc(16px + env(safe-area-inset-left)); pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
   .brand p { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .16em; color: #ffd257; }
   .brand h1 { margin: 4px 0 0; font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: 30px; line-height: 1; }
@@ -31,15 +31,26 @@
   .loading { position: fixed; inset: 0; display: grid; place-items: center; font-size: 15px; color: #cfd6f5; background: #141c22; transition: opacity .5s; z-index: 5; }
   @media (pointer: coarse) { kbd, .pc { display: none; } }
   @media (pointer: fine) { .touch { display: none; } }
+  @media (max-width: 480px) { kbd { display: none; } }
   @media (max-width: 560px) { .brand h1 { font-size: 24px; } .panel button { padding: 0 10px; font-size: 13px; } .hint { font-size: 12px; } }
   .demo-pill { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom)); padding: 9px 15px;
     border-radius: 999px; background: rgba(12,16,28,.66); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     font-size: 13px; font-weight: 700; color: #ffe08a; pointer-events: none; white-space: nowrap; transition: opacity .45s; }
   .demo-pill.off { opacity: 0; }
+  .fire { position: fixed; right: calc(18px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); width: 88px; height: 88px;
+    border: 0; border-radius: 50%; padding: 0; color: #fff; display: grid; place-items: center; align-content: center; gap: 2px; cursor: pointer;
+    font: 700 13px 'Noto Sans KR', sans-serif; letter-spacing: .02em; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    background: radial-gradient(circle at 50% 36%, rgba(255,255,255,.26), rgba(255,255,255,.05) 64%), rgba(12,16,28,.58);
+    box-shadow: inset 0 0 0 3px var(--tc, #e5463e), 0 6px 18px rgba(0,0,0,.35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: transform .08s, box-shadow .12s; }
+  .fire svg { width: 30px; height: 30px; }
+  .fire[data-on="true"] { transform: scale(.93); box-shadow: inset 0 0 0 4px var(--tc, #e5463e), 0 0 26px var(--tc, #e5463e);
+    background: radial-gradient(circle at 50% 36%, rgba(255,255,255,.4), rgba(255,255,255,.1) 64%), rgba(12,16,28,.5); }
+  .panel button { touch-action: manipulation; }
   @media (orientation: portrait) {
     .hint { top: calc(74px + env(safe-area-inset-top)); left: calc(16px + env(safe-area-inset-left)); right: auto; text-align: left; max-width: 72vw; }
-    .tools { left: 50%; transform: translateX(-50%); width: max-content; }
-    .demo-pill { bottom: calc(86px + env(safe-area-inset-bottom)); }
+    .tools { bottom: calc(22px + env(safe-area-inset-bottom)); }
+    .demo-pill { bottom: calc(122px + env(safe-area-inset-bottom)); }
   }
 </style>
 <script type="importmap">
@@ -52,7 +63,7 @@
 <body>
 <canvas id="c" aria-label="1인칭 3D 세척건 데모"></canvas>
 <div class="brand"><p>WASH KNIGHT 3D</p><h1>워시 나이트</h1></div>
-<div class="hint"><span class="pc">마우스로 조준 · 누르고 있으면 분사<br>1 2 3 노즐 교체</span><span class="touch">화면을 누른 채로 끌어서 조준·분사</span></div>
+<div class="hint"><span class="pc" id="pcHint">클릭하면 마우스로 시점 이동<br>누르고 있으면 분사 · Esc 해제 · 1 2 3 노즐</span><span class="touch">화면을 끌어서 시점 이동<br>분사 버튼을 누르고 있으면 가운데로 발사</span></div>
 <div class="panel tools" role="group" aria-label="노즐 선택">
   <button data-tool="red" aria-pressed="true"><span class="dot red"></span>집중<kbd>1</kbd></button>
   <button data-tool="green" aria-pressed="false"><span class="dot green"></span>넓은<kbd>2</kbd></button>
@@ -67,7 +78,11 @@
     </svg>
   </button>
 </div>
-<div class="demo-pill" id="demoPill"><span class="pc">자동 시연 중 · 마우스를 움직이면 직접 조작</span><span class="touch">자동 시연 중 · 화면을 누르면 직접 조작</span></div>
+<button class="fire" id="fire" data-on="false" aria-label="분사 (누르고 있기)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 3.5c3 3.6 5.5 6.7 5.5 9.6a5.5 5.5 0 0 1-11 0c0-2.9 2.5-6 5.5-9.6z"/><path d="M9.6 14.2a2.6 2.6 0 0 0 2.4 2.4"/>
+  </svg>분사</button>
+<div class="demo-pill" id="demoPill"><span class="pc">자동 시연 중 · 클릭하면 직접 조작</span><span class="touch">자동 시연 중 · 화면을 누르면 직접 조작</span></div>
 <div class="loading" id="loading">세척건 조립 중…</div>
 <script>
   window.addEventListener('error', function () { var l = document.getElementById('loading'); if (l && !window.__ready) l.textContent = '3D를 불러오지 못했어요 · 새로고침해 주세요'; });
@@ -163,6 +178,10 @@ const surfaces = [];
   })();
   const ceil = new THREE.Mesh(new THREE.PlaneGeometry(w * 2, depth), new THREE.MeshBasicMaterial({ map: ceilTex }));
   ceil.rotation.x = Math.PI / 2; ceil.position.set(0, h, (back + front) / 2); world.add(ceil); surfaces.push(ceil);
+  ceil.userData.wetOff = 0.0025;
+  const frontW = plane(w * 2, h, wallMat, [w * 2 / 1.5, h / 1.5]); frontW.rotation.y = Math.PI; frontW.position.set(0, h / 2, front); world.add(frontW); surfaces.push(frontW);
+  const bandF = plane(w * 2, 0.5, new THREE.MeshLambertMaterial({ map: bandTex }), [w * 2 / 1.5, 0.5 / 1.5]); bandF.rotation.y = Math.PI; bandF.position.set(0, 1.05, front - 0.002); world.add(bandF);
+  for (const sx of [-1, 1]) { const b = plane(depth, 0.5, new THREE.MeshLambertMaterial({ map: bandTex }), [depth / 1.5, 0.5 / 1.5]); b.rotation.y = -sx * Math.PI / 2; b.position.set(sx * (w - 0.002), 1.05, (back + front) / 2); world.add(b); }
   // drain + gutter
   const drain = new THREE.Mesh(new THREE.CircleGeometry(0.22, 32), new THREE.MeshLambertMaterial({ color: 0x0d1215 })); drain.rotation.x = -Math.PI / 2; drain.position.set(0.3, 0.003, back + 1.4); world.add(drain);
   for (let i = -3; i <= 3; i++) { const bar = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.01, 0.022), new THREE.MeshLambertMaterial({ color: 0x55636b })); bar.position.set(0.3, 0.006, back + 1.4 + i * 0.05); world.add(bar); }
@@ -197,21 +216,30 @@ const surfaces = [];
     b.position.set(-w + 0.14, 1.5 + (i % 2) * 0.03, back + 1.05 + i * 0.2); world.add(b);
   }
 }
-// wet overlay on back wall
-const wetCv = document.createElement('canvas'); wetCv.width = 512; wetCv.height = 256;
-const wetG = wetCv.getContext('2d');
-const wetTex = new THREE.CanvasTexture(wetCv);
-const wetMesh = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w * 2, ROOM.h), new THREE.MeshBasicMaterial({ map: wetTex, transparent: true, depthWrite: false, toneMapped: false }));
-wetMesh.position.set(0, ROOM.h / 2, ROOM.back + 0.004); world.add(wetMesh);
-let wetDirty = 0;
+// wet overlays: one canvas per room surface, marks fade out over time
+const wets = surfaces.map((sf) => {
+  const W = sf.geometry.parameters.width, H = sf.geometry.parameters.height, cw = 512, ch = Math.max(64, Math.round(512 * H / W));
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+  const tex = new THREE.CanvasTexture(c);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
+  m.position.copy(sf.position); m.quaternion.copy(sf.quaternion); m.translateZ(sf.userData.wetOff || 0.004);
+  m.renderOrder = 1; world.add(m); m.updateMatrixWorld();
+  return { m, g: c.getContext('2d'), tex, W, H, cw, ch, kx: cw / W, ky: ch / H, dirty: 0, ink: 0, lx: 0, ly: 0 };
+});
+const tmpL = new THREE.Vector3();
 function wetMark(p, r, a, foamy = false) {
-  if (Math.abs(p.z - ROOM.back) > 0.05) return;
-  const u = (p.x + ROOM.w) / (ROOM.w * 2) * 512, v = (1 - p.y / ROOM.h) * 256, rp = r / (ROOM.w * 2) * 512;
-  const g = wetG.createRadialGradient(u, v, 0, u, v, rp);
+  let o = null, bd = 0.06;
+  for (const q of wets) {
+    tmpL.copy(p); q.m.worldToLocal(tmpL);
+    if (Math.abs(tmpL.z) < bd && Math.abs(tmpL.x) <= q.W / 2 + r && Math.abs(tmpL.y) <= q.H / 2 + r) { bd = Math.abs(tmpL.z); o = q; q.lx = tmpL.x; q.ly = tmpL.y; }
+  }
+  if (!o) return;
+  const u = (o.lx + o.W / 2) * o.kx, v = (o.H / 2 - o.ly) * o.ky, rp = r * o.kx;
+  const g = o.g.createRadialGradient(u, v, 0, u, v, rp);
   if (foamy) { g.addColorStop(0, `rgba(255,248,255,${a})`); g.addColorStop(0.7, `rgba(240,225,250,${a * 0.8})`); g.addColorStop(1, 'rgba(240,225,250,0)'); }
   else { g.addColorStop(0, `rgba(5,22,30,${a})`); g.addColorStop(1, 'rgba(5,22,30,0)'); }
-  wetG.fillStyle = g; wetG.beginPath(); wetG.arc(u, v, rp, 0, Math.PI * 2); wetG.fill();
-  wetDirty = 1;
+  o.g.fillStyle = g; o.g.beginPath(); o.g.arc(u, v, rp, 0, Math.PI * 2); o.g.fill();
+  o.dirty = 1; o.ink = 90;
 }
 
 // ================================================================== viewmodel
@@ -370,6 +398,9 @@ function updateParticles(dt) {
     pPos[i * 3] += pVel[i * 3] * dt; pPos[i * 3 + 1] += pVel[i * 3 + 1] * dt; pPos[i * 3 + 2] += pVel[i * 3 + 2] * dt;
     if (pPos[i * 3 + 1] < 0.01) { pPos[i * 3 + 1] = 0.01; pVel[i * 3 + 1] *= -0.25; pVel[i * 3] *= 0.5; pVel[i * 3 + 2] *= 0.5; }
     if (pPos[i * 3 + 2] < ROOM.back + 0.01) { pPos[i * 3 + 2] = ROOM.back + 0.01; pVel[i * 3 + 2] *= -0.3; }
+    if (pPos[i * 3 + 2] > ROOM.front - 0.01) { pPos[i * 3 + 2] = ROOM.front - 0.01; pVel[i * 3 + 2] *= -0.3; }
+    if (Math.abs(pPos[i * 3]) > ROOM.w - 0.01) { pPos[i * 3] = Math.sign(pPos[i * 3]) * (ROOM.w - 0.01); pVel[i * 3] *= -0.3; }
+    if (pPos[i * 3 + 1] > ROOM.h - 0.01) { pPos[i * 3 + 1] = ROOM.h - 0.01; pVel[i * 3 + 1] *= -0.3; }
     const t = pLife[i] / pMax[i];
     pAlpha[i] = k === 1 ? (1 - t) * Math.min(1, t * 6) : 1 - t * t;
   }
@@ -385,13 +416,22 @@ const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpS = new THRE
 
 // ================================================================== aim / state
 const ray = new THREE.Raycaster();
-const ndc = new THREE.Vector2(0, -0.05);
+const ndc = new THREE.Vector2(0, 0);   // reticle is always the screen centre
 const hit = new THREE.Vector3(0, 1.4, ROOM.back);
 const hitN = new THREE.Vector3(0, 0, 1);
 let firing = false, spray = 0, tool = 'red', swap = null, look = 'toon', attract = true, aT = 0;
 const pill = document.getElementById('demoPill');
 function endAttract() { if (!attract) return; attract = false; firing = false; sprayAudio(false); pill.classList.add('off'); }
 let trig = 0, needle = -118 * D2R, aimYaw = 0, aimPitch = 0, recoil = 0;
+// free look (world camera): yaw > 0 looks left, pitch > 0 looks up
+let lookYaw = 0, lookPitch = -0.05, lookYawT = 0, lookPitchT = -0.05, pYaw = 0, pPitch = 0, swayY = 0, swayP = 0;
+const YAW_MAX = 1.25, PITCH_MIN = -0.8, PITCH_MAX = 0.62, MOUSE_SENS = 0.0022;
+const basePitch = () => -0.05 - 0.08 * (1 - ASPK);
+const touchSens = () => 1.7 / Math.max(320, Math.min(VW, VH));
+function addLook(dx, dy, sens) {
+  lookYawT = clamp(lookYawT - dx * sens, -YAW_MAX, YAW_MAX);
+  lookPitchT = clamp(lookPitchT - dy * sens, PITCH_MIN, PITCH_MAX);
+}
 const off = new THREE.Vector3();
 function updateHit() {
   ray.setFromCamera(ndc, wcam);
@@ -401,7 +441,6 @@ function updateHit() {
     hitN.copy(hits[0].face.normal).transformDirection(hits[0].object.matrixWorld);
   } else { hit.copy(ray.ray.origin).addScaledVector(ray.ray.direction, 6); hitN.set(0, 0, 1); }
 }
-function setNdcFromEvent(e) { ndc.x = (e.clientX / VW) * 2 - 1; ndc.y = -(e.clientY / VH) * 2 + 1; }
 const restTip = new THREE.Vector3(), restRear = new THREE.Vector3(), tipW = new THREE.Vector3();
 function nozzleScreen(out) {
   rig.root.updateWorldMatrix(true, false);
@@ -416,19 +455,63 @@ function streamStart(out) {
 }
 
 // ================================================================== input + ui
-cv.addEventListener('pointermove', (e) => {
-  if (attract) { if (e.pointerType === 'mouse' && Math.abs(e.movementX) + Math.abs(e.movementY) > 3) endAttract(); else return; }
-  setNdcFromEvent(e);
+const fireBtn = document.getElementById('fire');
+function startFire() { ensureAudio(); if (!firing) { firing = true; sprayAudio(true); } }
+function stopFire() { if (firing) { firing = false; sprayAudio(false); } }
+// PC: pointer lock (mouse look, hold left button to spray). If the page may not lock the pointer: drag to look, Space / fire button to spray.
+let locked = false, plFailed = !('requestPointerLock' in cv) || MOBILE;
+const pcHint = document.getElementById('pcHint');
+function updateHint() {
+  pcHint.innerHTML = plFailed ? '드래그로 시점 이동<br>Space 또는 분사 버튼으로 분사 · 1 2 3 노즐'
+    : locked ? '마우스로 시점 이동 · 누르고 있으면 분사<br>Esc 해제 · 1 2 3 노즐' : '클릭하면 마우스로 시점 이동<br>누르고 있으면 분사 · Esc 해제 · 1 2 3 노즐';
+}
+function lockFail() { plFailed = true; updateHint(); }
+function tryLock() { try { const p = cv.requestPointerLock(); if (p && p.catch) p.catch(lockFail); } catch (_) { lockFail(); } }
+document.addEventListener('pointerlockchange', () => { locked = document.pointerLockElement === cv; if (!locked) stopFire(); updateHint(); });
+document.addEventListener('pointerlockerror', lockFail);
+updateHint();
+// canvas: drag (any finger / mouse fallback) rotates the view; several fingers at once are fine
+const drags = new Map();
+cv.addEventListener('pointerdown', (e) => {
+  endAttract(); ensureAudio();
+  if (e.pointerType === 'mouse') {
+    if (locked) { if (e.button === 0) startFire(); return; }
+    if (!plFailed && e.button === 0) { tryLock(); return; }
+    if (e.button === 2) { startFire(); return; }
+  }
+  drags.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
 });
-cv.addEventListener('pointerdown', (e) => { endAttract(); setNdcFromEvent(e); ensureAudio(); firing = true; sprayAudio(true); try { cv.setPointerCapture(e.pointerId); } catch (_) {} });
-const stopFire = () => { if (firing) { firing = false; sprayAudio(false); } };
-cv.addEventListener('pointerup', stopFire); cv.addEventListener('pointercancel', stopFire); cv.addEventListener('lostpointercapture', stopFire);
-window.addEventListener('blur', stopFire);
+cv.addEventListener('pointermove', (e) => {
+  if (locked && e.pointerType === 'mouse') { addLook(e.movementX, e.movementY, MOUSE_SENS); return; }
+  const d = drags.get(e.pointerId); if (!d) return;
+  addLook(e.clientX - d.x, e.clientY - d.y, touchSens()); d.x = e.clientX; d.y = e.clientY;
+});
+const dragEnd = (e) => { drags.delete(e.pointerId); if (e.pointerType === 'mouse' && (locked || e.button === 2)) stopFire(); };
+cv.addEventListener('pointerup', dragEnd); cv.addEventListener('pointercancel', dragEnd);
+cv.addEventListener('lostpointercapture', (e) => drags.delete(e.pointerId));
+cv.addEventListener('contextmenu', (e) => e.preventDefault());
+// fire button: hold to spray toward the centre; sliding the thumb on it also aims
+let fireId = null, fx = 0, fy = 0;
+fireBtn.addEventListener('pointerdown', (e) => {
+  e.preventDefault(); endAttract();
+  fireId = e.pointerId; fx = e.clientX; fy = e.clientY;
+  try { fireBtn.setPointerCapture(e.pointerId); } catch (_) {}
+  startFire();
+});
+fireBtn.addEventListener('pointermove', (e) => {
+  if (e.pointerId !== fireId) return;
+  addLook(e.clientX - fx, e.clientY - fy, touchSens()); fx = e.clientX; fy = e.clientY;
+});
+const fireUp = (e) => { if (e.pointerId !== fireId) return; fireId = null; stopFire(); };
+fireBtn.addEventListener('pointerup', fireUp); fireBtn.addEventListener('pointercancel', fireUp); fireBtn.addEventListener('lostpointercapture', fireUp);
+fireBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+window.addEventListener('blur', () => { stopFire(); drags.clear(); fireId = null; });
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
   endAttract();
   if (e.key === '1') setTool('red'); else if (e.key === '2') setTool('green'); else if (e.key === '3') setTool('soap');
-  else if (e.code === 'Space') { e.preventDefault(); ensureAudio(); firing = true; sprayAudio(true); }
+  else if (e.code === 'Space') { e.preventDefault(); startFire(); }
 });
 window.addEventListener('keyup', (e) => { if (e.code === 'Space') stopFire(); });
 document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => { endAttract(); ensureAudio(); setTool(b.dataset.tool); }));
@@ -438,6 +521,7 @@ function setTool(t) {
   swap = { from: swap ? swap.to : tool, to: t, t0: now };
   tool = t;
   document.querySelectorAll('[data-tool]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tool === t)));
+  fireBtn.style.setProperty('--tc', t === 'red' ? '#e5463e' : t === 'green' ? '#34b36a' : '#e889f2');
   clickSound(); sprayAudio(firing);
 }
 function setLook(l) {
@@ -536,27 +620,28 @@ function frame(ts) {
     const seg = Math.floor(aT / 5.5) % 3, local = aT % 5.5, want = ['red', 'green', 'soap'][seg];
     if (want !== tool) setTool(want);
     firing = local > 0.9 && local < 4.9;
-    ndc.set(0.36 * Math.sin(aT * 0.6 - 0.4) + 0.08 * Math.sin(aT * 1.9), 0.1 + 0.17 * Math.sin(aT * 0.43 + 0.8));
+    lookYawT = 0.3 * Math.sin(aT * 0.55 - 0.4) + 0.05 * Math.sin(aT * 1.7);
+    lookPitchT = basePitch() + 0.12 + 0.1 * Math.sin(aT * 0.43 + 0.8);
   }
+  if (fireBtn.dataset.on !== String(firing)) fireBtn.dataset.on = String(firing);
   spray = damp(spray, firing ? 1 : 0, firing ? 22 : 14, dt);
-  // world camera sway toward aim
-  wcam.rotation.y = damp(wcam.rotation.y, -ndc.x * 0.06, 5, dt);
-  wcam.rotation.x = damp(wcam.rotation.x, ndc.y * 0.04 - 0.03 - 0.1 * (1 - ASPK), 5, dt);
+  // world camera = free look
+  lookYaw = damp(lookYaw, lookYawT, 28, dt); lookPitch = damp(lookPitch, lookPitchT, 28, dt);
+  wcam.rotation.y = lookYaw; wcam.rotation.x = lookPitch;
   wcam.position.set(CAM_POS.x + Math.sin(now * 1.1) * 0.004, CAM_POS.y + Math.sin(now * 2.2) * 0.005, CAM_POS.z);
   wcam.updateMatrixWorld();
   updateHit();
-  // viewmodel aim
-  const dir = new THREE.Vector3(ndc.x, ndc.y, 0.5).unproject(vcam).normalize();
-  const tYaw = Math.atan2(-dir.x, -dir.z), tPitch = Math.asin(clamp(dir.y, -1, 1));
-  const kAim = 0.75;
-  let ty = clamp(tYaw * kAim + ndc.x * 0.04, -0.42, 0.26), tp = clamp(tPitch * kAim + 0.02, -0.28, 0.34);
+  // viewmodel: points at the centre, lags a little behind view turns
+  const yawV = (lookYaw - pYaw) / Math.max(dt, 1e-3), pitchV = (lookPitch - pPitch) / Math.max(dt, 1e-3); pYaw = lookYaw; pPitch = lookPitch;
+  swayY = damp(swayY, clamp(-yawV * 0.035, -0.1, 0.1), 9, dt); swayP = damp(swayP, clamp(-pitchV * 0.035, -0.08, 0.08), 9, dt);
+  let ty = swayY, tp = 0.02 + swayP;
   ty += Math.sin(now * 1.3) * 0.006; tp += Math.sin(now * 2.1) * 0.005;
   recoil = damp(recoil, spray * (tool === 'red' ? 1 : tool === 'green' ? 0.7 : 0.45), 18, dt);
   if (recoil > 0.02) { ty += (Math.random() - 0.5) * 0.008 * recoil; tp += (Math.random() - 0.5) * 0.008 * recoil + 0.004 * recoil; }
   let dip = 0;
   if (swap) { const u = clamp((now - swap.t0) / 0.38, 0, 1); dip = Math.sin(Math.PI * u); if (u >= 1) swap = null; }
   aimYaw = damp(aimYaw, ty, 13, dt); aimPitch = damp(aimPitch, tp - dip * 0.09, 13, dt);
-  aimPivot.rotation.set(aimPitch, aimYaw, dip * 0.12 + Math.sin(now * 1.7) * 0.004, 'YXZ');
+  aimPivot.rotation.set(aimPitch, aimYaw, dip * 0.12 + Math.sin(now * 1.7) * 0.004 - swayY * 0.5, 'YXZ');
   off.set(0.006 * recoil, -0.004 * recoil - dip * 0.02, 0.012 * recoil);
   aimPivot.position.copy(new THREE.Vector3().lerpVectors(PORT.pivot, LAND.pivot, ASPK)).add(off);
   // trigger / finger / gauge
@@ -583,7 +668,7 @@ function frame(ts) {
   const t = now;
   jetOuter.material.uniforms.uTime.value = t; jetCore.material.uniforms.uTime.value = t; soapJet.material.uniforms.uTime.value = t; fan.material.uniforms.uTime.value = t;
   const aJet = tool === 'red' ? spray : 0, aFan = tool === 'green' ? spray : 0, aSoap = tool === 'soap' ? spray : 0;
-  jetOuter.material.uniforms.uAlpha.value = aJet * 0.5; jetCore.material.uniforms.uAlpha.value = aJet;
+  jetOuter.material.uniforms.uAlpha.value = aJet * 0.62; jetCore.material.uniforms.uAlpha.value = aJet;
   soapJet.material.uniforms.uAlpha.value = aSoap * 0.7; fan.material.uniforms.uAlpha.value = aFan;
   jetOuter.visible = jetCore.visible = aJet > 0.01; soapJet.visible = aSoap > 0.01; fan.visible = aFan > 0.01;
   const jitter = new THREE.Vector3((Math.random() - 0.5) * 0.01, (Math.random() - 0.5) * 0.01, 0);
@@ -600,8 +685,8 @@ function frame(ts) {
   };
   if (jetOuter.visible) {
     const cu = curveFor(startW, H, 0.035);
-    updateTube(jetOuter, cu, 0.009, 0.09, 0.14, t);
-    updateTube(jetCore, cu, 0.0035, 0.03, 0.1, t);
+    updateTube(jetOuter, cu, 0.02, 0.11, 0.14, t);
+    updateTube(jetCore, cu, 0.0075, 0.038, 0.1, t);
     if (spray > 0.5) trail(cu, cnt(3), 0);
   }
   if (fan.visible) { const cu = curveFor(startW, H, 0.03); updateFan(cu, 0.004, 0.42); if (spray > 0.5) trail(cu, cnt(3), 0.42); }
@@ -675,8 +760,13 @@ function frame(ts) {
   foamMesh.instanceMatrix.needsUpdate = true;
   // wet layer fade + upload
   frames++;
-  if (frames % 12 === 0) { wetG.globalCompositeOperation = 'destination-out'; wetG.fillStyle = 'rgba(0,0,0,0.04)'; wetG.fillRect(0, 0, 512, 256); wetG.globalCompositeOperation = 'source-over'; wetDirty = 1; }
-  if (wetDirty && frames % 2 === 0) { wetTex.needsUpdate = true; wetDirty = 0; }
+  if (frames % 12 === 0) for (const o of wets) {
+    if (o.ink <= 0) continue;
+    if (--o.ink === 0) o.g.clearRect(0, 0, o.cw, o.ch);
+    else { o.g.globalCompositeOperation = 'destination-out'; o.g.fillStyle = 'rgba(0,0,0,0.04)'; o.g.fillRect(0, 0, o.cw, o.ch); o.g.globalCompositeOperation = 'source-over'; }
+    o.dirty = 1;
+  }
+  if (frames % 2 === 0) for (const o of wets) if (o.dirty) { o.tex.needsUpdate = true; o.dirty = 0; }
   // render: world, then viewmodel on top
   renderer.clear();
   renderer.render(world, wcam);
@@ -696,13 +786,14 @@ function drawReticle() {
   const RD = Math.min(2, window.devicePixelRatio || 1);
   if (rc.width !== Math.round(VW * RD) || rc.height !== Math.round(VH * RD)) { rc.width = Math.round(VW * RD); rc.height = Math.round(VH * RD); rctx.setTransform(RD, 0, 0, RD, 0, 0); }
   rctx.clearRect(0, 0, VW, VH);
-  const x = (ndc.x + 1) / 2 * VW, y = (1 - ndc.y) / 2 * VH, r = firing ? 11 + Math.random() * 1.5 : 15;
+  const x = VW / 2, y = VH / 2, r = firing ? 11 + Math.random() * 1.5 : 15;
   rctx.lineWidth = 4; rctx.strokeStyle = 'rgba(10,14,30,0.55)'; rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.stroke();
   rctx.lineWidth = 2; rctx.strokeStyle = 'rgba(255,255,255,0.92)'; rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.stroke();
   rctx.fillStyle = '#fff'; rctx.beginPath(); rctx.arc(x, y, 2, 0, Math.PI * 2); rctx.fill();
 }
 
 layout();
+lookPitch = lookPitchT = pPitch = basePitch();
 renderer.compile(world, wcam); renderer.compile(vscene, vcam);
 document.getElementById('loading').style.opacity = 0;
 setTimeout(() => document.getElementById('loading').remove(), 600);
@@ -712,7 +803,7 @@ window.__demo = {
   set(o) {
     if (o.attract) { attract = true; aT = 0; pill.classList.remove('off'); return; }
     endAttract();
-    if (o.ndc) { ndc.set(o.ndc[0], o.ndc[1]); }
+    if (o.view) { lookYawT = o.view[0]; lookPitchT = o.view[1]; if (o.snap) { lookYaw = pYaw = o.view[0]; lookPitch = pPitch = o.view[1]; } }
     if (o.fire !== undefined) firing = o.fire;
     if (o.tool) setTool(o.tool);
     if (o.look) setLook(o.look);
@@ -731,6 +822,7 @@ window.__demo = {
     }
     return c.toDataURL('image/jpeg', 0.92);
   },
+  state: () => ({ firing, attract, yaw: +lookYawT.toFixed(4), pitch: +lookPitchT.toFixed(4), locked, plFailed, btn: fireBtn.dataset.on }),
   stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: DPR }),
 };
 </script>
