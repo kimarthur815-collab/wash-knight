@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>워시 나이트 3D · 1인칭 세척건</title>
+<title>워시 나이트 3D · 기본 게임</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700&display=swap">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #141c22; color: #fff;
@@ -47,11 +47,47 @@
   .fire[data-on="true"] { transform: scale(.93); box-shadow: inset 0 0 0 4px var(--tc, #e5463e), 0 0 26px var(--tc, #e5463e);
     background: radial-gradient(circle at 50% 36%, rgba(255,255,255,.4), rgba(255,255,255,.1) 64%), rgba(12,16,28,.5); }
   .panel button { touch-action: manipulation; }
-  @media (orientation: portrait) {
-    .hint { top: calc(74px + env(safe-area-inset-top)); left: calc(16px + env(safe-area-inset-left)); right: auto; text-align: left; max-width: 72vw; }
-    .tools { bottom: calc(22px + env(safe-area-inset-bottom)); }
-    .demo-pill { bottom: calc(122px + env(safe-area-inset-bottom)); }
-  }
+  @media (orientation: portrait) { .tools { bottom: calc(22px + env(safe-area-inset-bottom)); } }
+  /* game HUD */
+  .hudtop { position: fixed; left: calc(14px + env(safe-area-inset-left)); right: calc(14px + env(safe-area-inset-right)); top: calc(14px + env(safe-area-inset-top));
+    pointer-events: none; text-shadow: 0 2px 8px rgba(0,0,0,.55); }
+  .hudtop[hidden] { display: none; }
+  .zinfo { display: flex; align-items: baseline; gap: 10px; height: 44px; font-weight: 700; font-size: 14px; color: #ffd257; }
+  .timer { display: inline-block; font-family: 'Black Han Sans', sans-serif; font-size: 28px; color: #fff; letter-spacing: .03em; }
+  .timer.warn { color: #ff6b5e; animation: pulse .5s infinite alternate; }
+  @keyframes pulse { to { transform: scale(1.08); } }
+  .boss { margin: 6px auto 0; max-width: 520px; }
+  .bossrow { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 700; }
+  .bossrow em { font-style: normal; color: #ff9b8a; margin-right: 4px; }
+  .bar { position: relative; height: 15px; margin-top: 5px; border-radius: 5px; background: rgba(10,12,22,.78);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.28), 0 3px 10px rgba(0,0,0,.45); overflow: hidden; }
+  .bar i { position: absolute; left: 3px; top: 3px; bottom: 3px; width: calc(100% - 6px); border-radius: 3px; transform-origin: left; }
+  .bar .chip { background: #fff1c2; transition: transform .45s ease .3s; }
+  .bar .fill { background: linear-gradient(180deg, #ff8f70, #d63a2e); }
+  .banner { position: fixed; left: 0; right: 0; top: 30%; text-align: center; pointer-events: none; font-family: 'Black Han Sans', sans-serif;
+    font-size: clamp(34px, 9vw, 60px); color: #fff; text-shadow: 0 4px 0 #1b2140, 0 0 26px rgba(0,0,0,.5);
+    opacity: 0; transform: scale(.82); transition: opacity .22s, transform .22s; }
+  .banner.on { opacity: 1; transform: scale(1); }
+  .banner small { display: block; margin-top: 6px; font: 700 17px 'Noto Sans KR', sans-serif; color: #ffe08a; text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+  .overlay { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: 20px; background: rgba(8,12,20,.5);
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  .overlay[hidden] { display: none; }
+  .card { width: min(400px, 100%); box-sizing: border-box; padding: 26px 22px 22px; border-radius: 22px; text-align: center; background: rgba(16,22,38,.93);
+    box-shadow: 0 0 0 2px rgba(242,183,44,.7), 0 22px 50px rgba(0,0,0,.5); }
+  .card h1, .card h2 { margin: 4px 0 6px; font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: 44px; line-height: 1.05; }
+  .card h2 { font-size: 38px; }
+  .kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; color: #ffd257; }
+  .sub { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: #e6ebff; }
+  .how { margin: 16px 0 20px; padding-left: 18px; text-align: left; font-size: 13.5px; line-height: 1.65; color: #d9e0ff; }
+  .how b.r { color: #ff8a80; } .how b.g { color: #6fdc9b; } .how b.p { color: #f0a6f7; }
+  .big { min-height: 52px; padding: 0 28px; border: 0; border-radius: 14px; cursor: pointer; font: 700 17px 'Noto Sans KR', sans-serif;
+    color: #1b1730; background: linear-gradient(#ffd257, #f2a72c); box-shadow: 0 4px 0 #b9761a; touch-action: manipulation; }
+  .big:active { transform: translateY(2px); box-shadow: 0 2px 0 #b9761a; }
+  .big.alt { color: #fff; background: rgba(255,255,255,.12); box-shadow: none; }
+  .btns { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+  .grade { margin: 4px 0 2px; font-family: 'Black Han Sans', sans-serif; font-size: 92px; line-height: 1; color: #ffd257; text-shadow: 0 5px 0 #8a5a12; }
+  .rows { margin: 14px 0 20px; font-size: 14px; color: #dfe5ff; }
+  .rows div { display: flex; justify-content: space-between; padding: 6px 2px; border-bottom: 1px solid rgba(255,255,255,.08); }
 </style>
 <script type="importmap">
 { "imports": {
@@ -62,8 +98,14 @@
 </head>
 <body>
 <canvas id="c" aria-label="1인칭 3D 세척건 데모"></canvas>
-<div class="brand"><p>WASH KNIGHT 3D</p><h1>워시 나이트</h1></div>
-<div class="hint"><span class="pc" id="pcHint">클릭하면 마우스로 시점 이동<br>누르고 있으면 분사 · Esc 해제 · 1 2 3 노즐</span><span class="touch">화면을 끌어서 시점 이동<br>분사 버튼을 누르고 있으면 가운데로 발사</span></div>
+<div class="hudtop" id="hudTop" hidden>
+  <div class="zinfo"><span id="zoneLbl">구역 1/3</span><span class="timer" id="timer">1:20</span></div>
+  <div class="boss">
+    <div class="bossrow"><span id="bossName">임시 몬스터</span><span><em>때 HP</em><span id="hpNum">0 / 0</span></span></div>
+    <div class="bar"><i class="chip" id="hpChip"></i><i class="fill" id="hpFill"></i></div>
+  </div>
+</div>
+<div class="banner" id="banner"></div>
 <div class="panel tools" role="group" aria-label="노즐 선택">
   <button data-tool="red" aria-pressed="true"><span class="dot red"></span>집중<kbd>1</kbd></button>
   <button data-tool="green" aria-pressed="false"><span class="dot green"></span>넓은<kbd>2</kbd></button>
@@ -82,7 +124,37 @@
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 3.5c3 3.6 5.5 6.7 5.5 9.6a5.5 5.5 0 0 1-11 0c0-2.9 2.5-6 5.5-9.6z"/><path d="M9.6 14.2a2.6 2.6 0 0 0 2.4 2.4"/>
   </svg>분사</button>
-<div class="demo-pill" id="demoPill"><span class="pc">자동 시연 중 · 클릭하면 직접 조작</span><span class="touch">자동 시연 중 · 화면을 누르면 직접 조작</span></div>
+<div class="overlay" id="titleOv">
+  <div class="card">
+    <p class="kicker">WASH KNIGHT · 몬스터 전용 워시샵</p>
+    <h1>워시 나이트</h1>
+    <p class="sub">구역 3곳의 몬스터 때 HP를<br>제한시간 안에 0으로 만들어요</p>
+    <ul class="how">
+      <li class="touch">화면을 끌어서 시점 이동, <b>분사 버튼</b>을 누르고 있으면 가운데로 발사</li>
+      <li class="pc" id="pcHint">화면 클릭 후 마우스로 시점 이동, 누르고 있으면 분사 (Esc 해제)</li>
+      <li><b class="r">집중</b> 좁고 강하게 · <b class="g">넓은</b> 넓고 약하게</li>
+      <li><b class="p">세제</b>를 바른 곳은 물로 훨씬 빨리 지워져요</li>
+    </ul>
+    <button class="big" id="startBtn">세척 시작</button>
+  </div>
+</div>
+<div class="overlay" id="resultOv" hidden>
+  <div class="card">
+    <p class="kicker">세척 완료</p>
+    <div class="grade" id="grade">S</div>
+    <p class="sub" id="totalTime"></p>
+    <div class="rows" id="rows"></div>
+    <button class="big" id="againBtn">다시 하기</button>
+  </div>
+</div>
+<div class="overlay" id="failOv" hidden>
+  <div class="card">
+    <p class="kicker">TIME OVER</p>
+    <h2>시간 초과!</h2>
+    <p class="sub" id="failMsg"></p>
+    <div class="btns"><button class="big" id="retryZoneBtn">이 구역 다시</button><button class="big alt" id="restartBtn">처음부터</button></div>
+  </div>
+</div>
 <div class="loading" id="loading">세척건 조립 중…</div>
 <script>
   window.addEventListener('error', function () { var l = document.getElementById('loading'); if (l && !window.__ready) l.textContent = '3D를 불러오지 못했어요 · 새로고침해 주세요'; });
@@ -92,6 +164,8 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildRig } from './rig.js';
+import { buildWorld, HALL, bayX } from './world.js';
+import { createMonster } from './monster.js';
 
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp, D2R = THREE.MathUtils.DEG2RAD;
 const damp = (a, b, k, dt) => lerp(a, b, 1 - Math.exp(-k * dt));
@@ -102,123 +176,18 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.autoClear = false;
 let DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-// ================================================================== world (wash bay)
+// ================================================================== world (wash hall, 3 bays)
 const world = new THREE.Scene();
-world.background = new THREE.Color(0x17222a);
-world.fog = new THREE.Fog(0x17222a, 7, 16);
 const wcam = new THREE.PerspectiveCamera(60, 1, 0.05, 40);
-const CAM_POS = new THREE.Vector3(0, 1.55, 0.6);
-wcam.position.copy(CAM_POS);
 wcam.rotation.order = 'YXZ';
-world.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2430, 1.1));
-const sun = new THREE.DirectionalLight(0xffe2bf, 1.7); sun.position.set(-3, 5, 3); world.add(sun);
-const ROOM = { w: 3.6, h: 3.3, back: -4.2, front: 1.6 };
-
-function tileTexture(cols, n, opts = {}) {
-  const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
-  const g = c.getContext('2d');
-  g.fillStyle = opts.grout || '#22343c'; g.fillRect(0, 0, S, S);
-  const T = S / n; let seed = 11;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-    const col = cols[Math.floor(rnd() * cols.length)];
-    const gx = x * T + 5, gy = y * T + 5, w = T - 10;
-    const gr = g.createLinearGradient(gx, gy, gx + w, gy + w);
-    gr.addColorStop(0, col[0]); gr.addColorStop(1, col[1]);
-    g.fillStyle = gr; g.beginPath(); g.roundRect(gx, gy, w, w, T * 0.06); g.fill();
-    g.fillStyle = 'rgba(255,255,255,0.10)'; g.beginPath(); g.ellipse(gx + w * 0.28, gy + w * 0.22, w * 0.18, w * 0.06, -0.5, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = 'rgba(255,255,255,0.12)'; g.lineWidth = 3; g.beginPath(); g.moveTo(gx + w * 0.1, gy + 4); g.lineTo(gx + w * 0.85, gy + 4); g.stroke();
-  }
-  if (opts.grime) {
-    for (let i = 0; i < 26; i++) {
-      const x = rnd() * S, y = rnd() * S, r = 40 + rnd() * 160;
-      const gr = g.createRadialGradient(x, y, 0, x, y, r);
-      gr.addColorStop(0, `rgba(${80 + rnd() * 30},${66 + rnd() * 20},40,${0.14 + rnd() * 0.12})`); gr.addColorStop(1, 'rgba(80,66,40,0)');
-      g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
-    }
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
-  return t;
-}
-const wallTex = tileTexture([['#5d8792', '#456c77'], ['#56808b', '#3f6570'], ['#62909b', '#4a737e'], ['#5a8590', '#43697a']], 6, { grime: true });
-const bandTex = tileTexture([['#2c4ea8', '#1f3a86'], ['#2a4aa0', '#1c357c']], 6, { grout: '#14203c' });
-const floorTex = tileTexture([['#3b4a52', '#2c3940'], ['#36454d', '#28343b'], ['#404f57', '#2f3c43']], 4, { grout: '#141b20', grime: true });
-const wallMat = new THREE.MeshLambertMaterial({ map: wallTex });
-function plane(w, h, mat, rep) {
-  const g = new THREE.PlaneGeometry(w, h);
-  const m = new THREE.Mesh(g, mat.clone());
-  if (rep) { m.material.map = mat.map.clone(); m.material.map.needsUpdate = true; m.material.map.repeat.set(rep[0], rep[1]); }
-  return m;
-}
-const surfaces = [];
-{
-  const { w, h, back, front } = ROOM, depth = front - back;
-  const backW = plane(w * 2, h, wallMat, [w * 2 / 1.5, h / 1.5]); backW.position.set(0, h / 2, back); world.add(backW); surfaces.push(backW);
-  const bandB = plane(w * 2, 0.5, new THREE.MeshLambertMaterial({ map: bandTex }), [w * 2 / 1.5, 0.5 / 1.5]); bandB.position.set(0, 1.05, back + 0.002); world.add(bandB);
-  const left = plane(depth, h, wallMat, [depth / 1.5, h / 1.5]); left.rotation.y = Math.PI / 2; left.position.set(-w, h / 2, (back + front) / 2); world.add(left); surfaces.push(left);
-  const right = plane(depth, h, wallMat, [depth / 1.5, h / 1.5]); right.rotation.y = -Math.PI / 2; right.position.set(w, h / 2, (back + front) / 2); world.add(right); surfaces.push(right);
-  const floor = plane(w * 2, depth, new THREE.MeshLambertMaterial({ map: floorTex }), [w * 2 / 1.2, depth / 1.2]); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, (back + front) / 2); world.add(floor); surfaces.push(floor);
-  const LAMPS = [[-1.5, -2.9], [1.5, -2.9], [-1.5, -0.5], [1.5, -0.5]];
-  const ceilTex = (() => {
-    const W = 1024, H = Math.round(1024 * depth / (w * 2)), c = document.createElement('canvas'); c.width = W; c.height = H;
-    const g = c.getContext('2d'), px = W / (w * 2), P = 0.6 * px;
-    g.fillStyle = '#1a2328'; g.fillRect(0, 0, W, H);
-    for (let y = 0; y < H; y += P) for (let x = 0; x < W; x += P) {
-      const gr = g.createLinearGradient(x, y, x + P, y + P); gr.addColorStop(0, '#46565e'); gr.addColorStop(1, '#38464d');
-      g.fillStyle = gr; g.fillRect(x + 3, y + 3, P - 6, P - 6);
-    }
-    for (const [lx, lz] of LAMPS) {
-      const u = (lx + w) * px, v = (1 - (lz - back) / depth) * H, RR = 1.6 * px;
-      const gr = g.createRadialGradient(u, v, 0, u, v, RR);
-      gr.addColorStop(0, 'rgba(255,238,205,0.75)'); gr.addColorStop(0.22, 'rgba(255,232,195,0.32)'); gr.addColorStop(1, 'rgba(255,230,190,0)');
-      g.fillStyle = gr; g.fillRect(u - RR, v - RR, 2 * RR, 2 * RR);
-    }
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
-  })();
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(w * 2, depth), new THREE.MeshBasicMaterial({ map: ceilTex }));
-  ceil.rotation.x = Math.PI / 2; ceil.position.set(0, h, (back + front) / 2); world.add(ceil); surfaces.push(ceil);
-  ceil.userData.wetOff = 0.0025;
-  const frontW = plane(w * 2, h, wallMat, [w * 2 / 1.5, h / 1.5]); frontW.rotation.y = Math.PI; frontW.position.set(0, h / 2, front); world.add(frontW); surfaces.push(frontW);
-  const bandF = plane(w * 2, 0.5, new THREE.MeshLambertMaterial({ map: bandTex }), [w * 2 / 1.5, 0.5 / 1.5]); bandF.rotation.y = Math.PI; bandF.position.set(0, 1.05, front - 0.002); world.add(bandF);
-  for (const sx of [-1, 1]) { const b = plane(depth, 0.5, new THREE.MeshLambertMaterial({ map: bandTex }), [depth / 1.5, 0.5 / 1.5]); b.rotation.y = -sx * Math.PI / 2; b.position.set(sx * (w - 0.002), 1.05, (back + front) / 2); world.add(b); }
-  // drain + gutter
-  const drain = new THREE.Mesh(new THREE.CircleGeometry(0.22, 32), new THREE.MeshLambertMaterial({ color: 0x0d1215 })); drain.rotation.x = -Math.PI / 2; drain.position.set(0.3, 0.003, back + 1.4); world.add(drain);
-  for (let i = -3; i <= 3; i++) { const bar = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.01, 0.022), new THREE.MeshLambertMaterial({ color: 0x55636b })); bar.position.set(0.3, 0.006, back + 1.4 + i * 0.05); world.add(bar); }
-  // round ceiling lamps
-  for (const [x, z] of LAMPS) {
-    const lamp = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.46), new THREE.MeshBasicMaterial({ color: 0xfff3dc, toneMapped: false }));
-    lamp.rotation.x = Math.PI / 2; lamp.position.set(x, h - 0.006, z); world.add(lamp);
-    const frame = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.56), new THREE.MeshBasicMaterial({ color: 0x8b979e }));
-    frame.rotation.x = Math.PI / 2; frame.position.set(x, h - 0.004, z); world.add(frame);
-  }
-  // shop sign
-  const sc = document.createElement('canvas'); sc.width = 1024; sc.height = 256;
-  const sg = sc.getContext('2d');
-  const drawSign = () => {
-    sg.clearRect(0, 0, 1024, 256);
-    sg.fillStyle = '#1c2340'; sg.beginPath(); sg.roundRect(8, 8, 1008, 240, 40); sg.fill();
-    sg.lineWidth = 10; sg.strokeStyle = '#f2b72c'; sg.stroke();
-    sg.fillStyle = '#ffd257'; sg.font = '700 40px "Noto Sans KR", sans-serif'; sg.textAlign = 'center'; sg.fillText('WASH KNIGHT · 몬스터 전용 워시샵', 512, 82);
-    sg.fillStyle = '#ffffff'; sg.font = '400 112px "Black Han Sans", sans-serif'; sg.fillText('워시 나이트', 512, 206);
-    signTex.needsUpdate = true;
-  };
-  const signTex = new THREE.CanvasTexture(sc); signTex.colorSpace = THREE.SRGBColorSpace;
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.6), new THREE.MeshBasicMaterial({ map: signTex, transparent: true }));
-  sign.position.set(0, 2.62, back + 0.01); world.add(sign);
-  drawSign(); document.fonts && document.fonts.ready.then(drawSign);
-  // shelf with soap bottles (left wall)
-  const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.04, 1.2), new THREE.MeshLambertMaterial({ color: 0x6b4b34 }));
-  shelf.position.set(-w + 0.14, 1.35, back + 1.5); world.add(shelf);
-  const bc = [0xe889f2, 0x3fb36b, 0xf2b72c, 0x5fa8ff];
-  for (let i = 0; i < 5; i++) {
-    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.26 + (i % 2) * 0.06, 16), new THREE.MeshLambertMaterial({ color: bc[i % 4] }));
-    b.position.set(-w + 0.14, 1.5 + (i % 2) * 0.03, back + 1.05 + i * 0.2); world.add(b);
-  }
-}
+const WORLD = buildWorld(world);
+const surfaces = WORLD.surfaces;
+const ROOM = WORLD.bounds;
+const CAM_POS = new THREE.Vector3(bayX(0), HALL.camY, HALL.camZ);
+wcam.position.copy(CAM_POS);
 // wet overlays: one canvas per room surface, marks fade out over time
 const wets = surfaces.map((sf) => {
-  const W = sf.geometry.parameters.width, H = sf.geometry.parameters.height, cw = 512, ch = Math.max(64, Math.round(512 * H / W));
+  const W = sf.geometry.parameters.width, H = sf.geometry.parameters.height, cw = Math.min(1024, Math.max(32, Math.round(W * 71))), ch = Math.max(32, Math.round(cw * H / W));
   const c = document.createElement('canvas'); c.width = cw; c.height = ch;
   const tex = new THREE.CanvasTexture(c);
   const m = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
@@ -255,10 +224,31 @@ const MOBILE = matchMedia('(pointer: coarse)').matches || Math.min(innerWidth, i
 await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));   // let the loading screen paint first
 const rig = buildRig({ lod: MOBILE ? 0.75 : 1 });
 const MIN_DPR = MOBILE ? 0.75 : 1;
+
+// ================================================================== game data
+const ZONES = [
+  { name: '임시 몬스터 1', R: 0.68, base: 0x9be0cf, shade: 0x4f9f97, dirt: 0.65, crust: 0.0, time: 80, hp: 1200, seed: 3 },
+  { name: '임시 몬스터 2', R: 0.8, base: 0xc3b4f2, shade: 0x6f62b0, dirt: 0.85, crust: 0.8, time: 100, hp: 2000, seed: 11 },
+  { name: '임시 몬스터 3', R: 0.92, base: 0xf6c09a, shade: 0xc0745a, dirt: 1.15, crust: 1.2, time: 120, hp: 3000, seed: 23 },
+];
+// spray footprint (metres, in the screen plane) and grime removal per second at its centre
+const FP = {
+  red: { rx: 0.075, ry: 0.075, str: 9, soapAdd: 0, soapWash: 0.8 },
+  green: { rx: 0.3, ry: 0.09, str: 1.6, soapAdd: 0, soapWash: 0.45 },
+  soap: { rx: 0.28, ry: 0.22, str: 0.4, soapAdd: 6, soapWash: 0 },
+};
+const CLEAR_AT = 0.05;              // zone clears when 5% of the grime is left
+const GRADES = [[130, 'S'], [175, 'A'], [225, 'B'], [Infinity, 'C']];
+const monsters = ZONES.map((z, i) => {
+  const m = createMonster({ ...z, z: HALL.monZ }, new THREE.Vector3(bayX(i), HALL.camY, HALL.camZ), MOBILE ? 20 : 26);
+  world.add(m.root);
+  return m;
+});
+const G = { state: 'title', zone: 0, left: 0, t: 0, times: [], camX: bayX(0), glideFrom: 0 };
 const aimPivot = new THREE.Group();
 vcam.add(aimPivot);
 aimPivot.add(rig.root);
-const LAND = { pos: new THREE.Vector3(0.333, -0.175, -0.65), rot: new THREE.Euler(0.05, 0.12, 0.15, 'YXZ'), pivot: new THREE.Vector3(0.27, -0.33, -0.32) };
+const LAND = { pos: new THREE.Vector3(0.38, -0.27, -0.62), rot: new THREE.Euler(0.05, 0.12, 0.15, 'YXZ'), pivot: new THREE.Vector3(0.33, -0.45, -0.30) };
 const PORT = { pos: new THREE.Vector3(0.23, -0.47, -0.64), rot: new THREE.Euler(0.04, 0.34, 0.2, 'YXZ'), pivot: new THREE.Vector3(0.19, -0.6, -0.32), tanH: 0.44 };
 
 let VW = 1, VH = 1, ASPK = 1;
@@ -279,6 +269,7 @@ function layout() {
   const res = new THREE.Vector2(); renderer.getDrawingBufferSize(res);
   rig.outlineMat.uniforms.uRes.value.copy(res);
   rig.outlineMat.uniforms.uWidth.value = 1.25 * DPR * clamp(Math.min(VW, VH) / 720, 0.75, 1.4);
+  for (const m of monsters) m.setRes(res, 1.3 * DPR * clamp(Math.min(VW, VH) / 720, 0.75, 1.4));
   pointScale = res.y / (2 * Math.tan(wcam.fov * D2R / 2));
 }
 let pointScale = 600;
@@ -419,27 +410,34 @@ const ray = new THREE.Raycaster();
 const ndc = new THREE.Vector2(0, 0);   // reticle is always the screen centre
 const hit = new THREE.Vector3(0, 1.4, ROOM.back);
 const hitN = new THREE.Vector3(0, 0, 1);
-let firing = false, spray = 0, tool = 'red', swap = null, look = 'toon', attract = true, aT = 0;
+let firing = false, spray = 0, tool = 'red', swap = null, look = 'toon', attract = false, aT = 0;
 const pill = document.getElementById('demoPill');
 function endAttract() { if (!attract) return; attract = false; firing = false; sprayAudio(false); pill.classList.add('off'); }
 let trig = 0, needle = -118 * D2R, aimYaw = 0, aimPitch = 0, recoil = 0;
 // free look (world camera): yaw > 0 looks left, pitch > 0 looks up
 let lookYaw = 0, lookPitch = -0.05, lookYawT = 0, lookPitchT = -0.05, pYaw = 0, pPitch = 0, swayY = 0, swayP = 0;
 const YAW_MAX = 1.25, PITCH_MIN = -0.8, PITCH_MAX = 0.62, MOUSE_SENS = 0.0022;
-const basePitch = () => -0.05 - 0.08 * (1 - ASPK);
+const basePitch = () => -Math.atan2(HALL.camY - (HALL.platH + 0.72 * ZONES[G.zone].R), HALL.camZ - HALL.monZ) - 0.02 * (1 - ASPK);
 const touchSens = () => 1.7 / Math.max(320, Math.min(VW, VH));
 function addLook(dx, dy, sens) {
+  if (G.state === 'glide') return;
   lookYawT = clamp(lookYawT - dx * sens, -YAW_MAX, YAW_MAX);
   lookPitchT = clamp(lookPitchT - dy * sens, PITCH_MIN, PITCH_MAX);
 }
 const off = new THREE.Vector3();
+let hitMon = null, hitDist = 3;
 function updateHit() {
   ray.setFromCamera(ndc, wcam);
   const hits = ray.intersectObjects(surfaces, false);
+  hitMon = null;
   if (hits.length) {
-    hit.copy(hits[0].point);
+    hit.copy(hits[0].point); hitDist = hits[0].distance;
     hitN.copy(hits[0].face.normal).transformDirection(hits[0].object.matrixWorld);
-  } else { hit.copy(ray.ray.origin).addScaledVector(ray.ray.direction, 6); hitN.set(0, 0, 1); }
+  } else { hit.copy(ray.ray.origin).addScaledVector(ray.ray.direction, 6); hitN.set(0, 0, 1); hitDist = 6; }
+  for (const m of monsters) {
+    const r = m.raycast(ray.ray.origin, ray.ray.direction);
+    if (r && r.dist < hitDist) { hit.copy(r.point); hitN.copy(r.normal); hitDist = r.dist; hitMon = m; }
+  }
 }
 const restTip = new THREE.Vector3(), restRear = new THREE.Vector3(), tipW = new THREE.Vector3();
 function nozzleScreen(out) {
@@ -462,8 +460,8 @@ function stopFire() { if (firing) { firing = false; sprayAudio(false); } }
 let locked = false, plFailed = !('requestPointerLock' in cv) || MOBILE;
 const pcHint = document.getElementById('pcHint');
 function updateHint() {
-  pcHint.innerHTML = plFailed ? '드래그로 시점 이동<br>Space 또는 분사 버튼으로 분사 · 1 2 3 노즐'
-    : locked ? '마우스로 시점 이동 · 누르고 있으면 분사<br>Esc 해제 · 1 2 3 노즐' : '클릭하면 마우스로 시점 이동<br>누르고 있으면 분사 · Esc 해제 · 1 2 3 노즐';
+  pcHint.innerHTML = plFailed ? '드래그로 시점 이동, Space나 <b>분사 버튼</b>으로 분사 · 1 2 3 노즐 교체'
+    : '화면 클릭 후 마우스로 시점 이동, 누르고 있으면 분사 (Esc 해제) · 1 2 3 노즐 교체';
 }
 function lockFail() { plFailed = true; updateHint(); }
 function tryLock() { try { const p = cv.requestPointerLock(); if (p && p.catch) p.catch(lockFail); } catch (_) { lockFail(); } }
@@ -608,6 +606,110 @@ function updateFan(cu, w0, w1) {
   fanGeo.attributes.position.needsUpdate = true;
 }
 
+// ================================================================== gun points at the reticle
+let corrYaw = 0, corrPitch = 0, retRX = 14, retRY = 14;
+const camR = new THREE.Vector3(), camU = new THREE.Vector3(), camF = new THREE.Vector3();
+const nozV = new THREE.Vector3(), barV = new THREE.Vector3(), tgtV = new THREE.Vector3();
+function alignGun() {
+  // neutral pose + current correction; measure the barrel, steer it toward the centre ray at the hit distance
+  aimPivot.rotation.set(corrPitch, corrYaw, 0, 'YXZ');
+  aimPivot.updateMatrixWorld(true);
+  nozV.copy(rig.nozzleLocal(tool)).applyMatrix4(rig.root.matrixWorld);
+  barV.set(0, 0, -1).transformDirection(rig.root.matrixWorld);
+  tgtV.set(0, 0, -clamp(hitDist, 1.2, 9)).sub(nozV).normalize();
+  const yb = Math.atan2(-barV.x, -barV.z), pb = Math.asin(clamp(barV.y, -1, 1));
+  const yt = Math.atan2(-tgtV.x, -tgtV.z), pt = Math.asin(clamp(tgtV.y, -1, 1));
+  corrYaw = clamp(corrYaw + (yt - yb) * 0.5, -0.7, 0.7); corrPitch = clamp(corrPitch + (pt - pb) * 0.5, -0.7, 0.7);
+}
+
+// ================================================================== game flow
+const $ = (id) => document.getElementById(id);
+const hud = { top: $('hudTop'), zone: $('zoneLbl'), timer: $('timer'), name: $('bossName'), hp: $('hpNum'), fill: $('hpFill'), chip: $('hpChip'), banner: $('banner') };
+const fmt = (s) => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+let bannerT = 0;
+function banner(html, ms) { hud.banner.innerHTML = html; hud.banner.classList.add('on'); clearTimeout(bannerT); bannerT = setTimeout(() => hud.banner.classList.remove('on'), ms); }
+function setState(s) { G.state = s; G.t = 0; }
+function hideOverlays() { for (const id of ['titleOv', 'resultOv', 'failOv']) $(id).hidden = true; }
+function startGame() {
+  ensureAudio(); hideOverlays(); hud.top.hidden = false;
+  for (const m of monsters) m.reset();
+  G.times = [];
+  enterZone(0, true);
+  jingle([[660, 0, 0.12], [880, 0.1, 0.22]]);
+}
+function enterZone(i, snap) {
+  G.zone = i; G.left = ZONES[i].time; monsters[i].reset();
+  if (snap) { G.camX = bayX(i); lookYawT = lookYaw = pYaw = 0; lookPitchT = lookPitch = pPitch = basePitch(); setState('intro'); introBanner(); }
+  else { G.glideFrom = G.camX; setState('glide'); }
+  updateHud(true);
+}
+function introBanner() { banner(`구역 ${G.zone + 1}<small>제한시간 ${ZONES[G.zone].time}초</small>`, 1500); }
+function updateGame(dt) {
+  G.t += dt;
+  if (G.state === 'glide') {
+    const u = Math.min(1, G.t / 1.6), e = u * u * (3 - 2 * u);
+    G.camX = G.glideFrom + (bayX(G.zone) - G.glideFrom) * e;
+    lookYawT = 0; lookPitchT = basePitch();
+    if (u >= 1) { setState('intro'); introBanner(); }
+  } else if (G.state === 'intro') {
+    if (G.t > 1.6) { setState('play'); banner('시작!', 700); }
+  } else if (G.state === 'play') {
+    G.left = Math.max(0, G.left - dt);
+    const m = monsters[G.zone];
+    if (m.frac() <= CLEAR_AT) {
+      m.finishClean(); G.times[G.zone] = ZONES[G.zone].time - G.left; setState('clear');
+      banner(`구역 ${G.zone + 1} 클리어!<small>${fmt(G.times[G.zone])}</small>`, 2000);
+      jingle([[784, 0, 0.16], [988, 0.1, 0.16], [1175, 0.2, 0.16], [1568, 0.3, 0.4]]);
+    } else if (G.left <= 0) {
+      setState('fail'); stopFire(); exitLock();
+      $('failMsg').textContent = `구역 ${G.zone + 1}에 때가 남았어요 (남은 때 HP ${m.hp().toLocaleString()})`;
+      $('failOv').hidden = false;
+      jingle([[330, 0, 0.25], [247, 0.22, 0.45]]);
+    }
+  } else if (G.state === 'clear') {
+    if (G.t > 2.3) {
+      if (G.zone < ZONES.length - 1) enterZone(G.zone + 1, false);
+      else { setState('result'); stopFire(); exitLock(); showResult(); }
+    }
+  }
+  updateHud();
+}
+function showResult() {
+  const total = G.times.reduce((a, b) => a + b, 0);
+  $('grade').textContent = GRADES.find(([lim]) => total <= lim)[1];
+  $('totalTime').textContent = `총 세척 시간 ${fmt(total)}`;
+  $('rows').innerHTML = G.times.map((t, i) => `<div><span>구역 ${i + 1}</span><span>${fmt(t)} / ${fmt(ZONES[i].time)}</span></div>`).join('');
+  $('resultOv').hidden = false;
+  jingle([[523, 0, 0.14], [659, 0.12, 0.14], [784, 0.24, 0.14], [1047, 0.36, 0.5]]);
+}
+const hudLast = { timer: '', hp: '', frac: -1, zone: -1, warn: null };
+function updateHud(force) {
+  if (G.state === 'title') return;
+  const m = monsters[G.zone], frac = G.state === 'clear' || G.state === 'result' ? 0 : m.frac();
+  const tStr = fmt(G.left);
+  if (force || tStr !== hudLast.timer) { hud.timer.textContent = tStr; hudLast.timer = tStr; }
+  const warn = G.state === 'play' && G.left <= 10;
+  if (warn !== hudLast.warn) { hud.timer.classList.toggle('warn', warn); hudLast.warn = warn; }
+  if (force || G.zone !== hudLast.zone) { hud.zone.textContent = `구역 ${G.zone + 1}/${ZONES.length}`; hud.name.textContent = ZONES[G.zone].name; hudLast.zone = G.zone; }
+  const hpStr = `${Math.ceil(frac * m.hpMax).toLocaleString()} / ${m.hpMax.toLocaleString()}`;
+  if (force || hpStr !== hudLast.hp) { hud.hp.textContent = hpStr; hudLast.hp = hpStr; }
+  if (force || Math.abs(frac - hudLast.frac) > 0.002) { hud.fill.style.transform = `scaleX(${frac})`; hud.chip.style.transform = `scaleX(${frac})`; hudLast.frac = frac; }
+}
+function exitLock() { try { if (document.pointerLockElement) document.exitPointerLock(); } catch (_) {} }
+function jingle(notes) {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  for (const [f, d, dur] of notes) {
+    const o = AC.createOscillator(), g = AC.createGain(); o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.12, t + d + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d + dur);
+    o.connect(g).connect(AC.destination); o.start(t + d); o.stop(t + d + dur + 0.03);
+  }
+}
+$('startBtn').addEventListener('click', startGame);
+$('againBtn').addEventListener('click', startGame);
+$('restartBtn').addEventListener('click', startGame);
+$('retryZoneBtn').addEventListener('click', () => { hideOverlays(); ensureAudio(); enterZone(G.zone, true); });
+
 // ================================================================== loop
 let now = 0, last = 0, frames = 0, slowAcc = 0, slowN = 0;
 const startW = new THREE.Vector3(), sideV = new THREE.Vector3();
@@ -615,22 +717,19 @@ function frame(ts) {
   now = ts / 1000;
   const dt = Math.min(0.05, last ? now - last : 0.016); last = now;
   const k60 = Math.min(3, dt * 60), cnt = (n) => { const x = n * k60; return Math.floor(x) + (Math.random() < x % 1 ? 1 : 0); };
-  if (attract) {
-    aT += dt;
-    const seg = Math.floor(aT / 5.5) % 3, local = aT % 5.5, want = ['red', 'green', 'soap'][seg];
-    if (want !== tool) setTool(want);
-    firing = local > 0.9 && local < 4.9;
-    lookYawT = 0.3 * Math.sin(aT * 0.55 - 0.4) + 0.05 * Math.sin(aT * 1.7);
-    lookPitchT = basePitch() + 0.12 + 0.1 * Math.sin(aT * 0.43 + 0.8);
-  }
+  updateGame(dt);
   if (fireBtn.dataset.on !== String(firing)) fireBtn.dataset.on = String(firing);
   spray = damp(spray, firing ? 1 : 0, firing ? 22 : 14, dt);
   // world camera = free look
   lookYaw = damp(lookYaw, lookYawT, 28, dt); lookPitch = damp(lookPitch, lookPitchT, 28, dt);
   wcam.rotation.y = lookYaw; wcam.rotation.x = lookPitch;
-  wcam.position.set(CAM_POS.x + Math.sin(now * 1.1) * 0.004, CAM_POS.y + Math.sin(now * 2.2) * 0.005, CAM_POS.z);
+  wcam.position.set(G.camX + Math.sin(now * 1.1) * 0.004, CAM_POS.y + Math.sin(now * 2.2) * 0.005, CAM_POS.z);
   wcam.updateMatrixWorld();
   updateHit();
+  // cleaning: the spray footprint scrubs grime off the current zone's monster
+  camR.setFromMatrixColumn(wcam.matrixWorld, 0); camU.setFromMatrixColumn(wcam.matrixWorld, 1); camF.setFromMatrixColumn(wcam.matrixWorld, 2).negate();
+  if (G.state === 'play' && spray > 0.6 && hitMon === monsters[G.zone]) hitMon.clean(hit, camR, camU, camF, FP[tool], dt * spray);
+  monsters.forEach((m, i) => { m.root.visible = Math.abs(bayX(i) - G.camX) < HALL.bayW * 1.02; if (m.root.visible) m.update(dt, now, wcam.position, wcam.matrixWorldInverse); });
   // viewmodel: points at the centre, lags a little behind view turns
   const yawV = (lookYaw - pYaw) / Math.max(dt, 1e-3), pitchV = (lookPitch - pPitch) / Math.max(dt, 1e-3); pYaw = lookYaw; pPitch = lookPitch;
   swayY = damp(swayY, clamp(-yawV * 0.035, -0.1, 0.1), 9, dt); swayP = damp(swayP, clamp(-pitchV * 0.035, -0.08, 0.08), 9, dt);
@@ -641,9 +740,10 @@ function frame(ts) {
   let dip = 0;
   if (swap) { const u = clamp((now - swap.t0) / 0.38, 0, 1); dip = Math.sin(Math.PI * u); if (u >= 1) swap = null; }
   aimYaw = damp(aimYaw, ty, 13, dt); aimPitch = damp(aimPitch, tp - dip * 0.09, 13, dt);
-  aimPivot.rotation.set(aimPitch, aimYaw, dip * 0.12 + Math.sin(now * 1.7) * 0.004 - swayY * 0.5, 'YXZ');
   off.set(0.006 * recoil, -0.004 * recoil - dip * 0.02, 0.012 * recoil);
   aimPivot.position.copy(new THREE.Vector3().lerpVectors(PORT.pivot, LAND.pivot, ASPK)).add(off);
+  alignGun();
+  aimPivot.rotation.set(aimPitch + corrPitch, aimYaw + corrYaw, dip * 0.12 + Math.sin(now * 1.7) * 0.004 - swayY * 0.5, 'YXZ');
   // trigger / finger / gauge
   trig = damp(trig, firing ? 1 : 0, 26, dt);
   rig.trigger.rotation.x = -0.2 * trig;
@@ -689,7 +789,7 @@ function frame(ts) {
     updateTube(jetCore, cu, 0.0075, 0.038, 0.1, t);
     if (spray > 0.5) trail(cu, cnt(3), 0);
   }
-  if (fan.visible) { const cu = curveFor(startW, H, 0.03); updateFan(cu, 0.004, 0.42); if (spray > 0.5) trail(cu, cnt(3), 0.42); }
+  if (fan.visible) { const cu = curveFor(startW, H, 0.03); updateFan(cu, 0.004, FP.green.rx + 0.05); if (spray > 0.5) trail(cu, cnt(3), FP.green.rx); }
   if (soapJet.visible) updateTube(soapJet, curveFor(startW, H, 0.12), 0.004, 0.03, 0.25, t);
   // impact fx
   if (spray > 0.6) {
@@ -727,6 +827,11 @@ function frame(ts) {
     if (f.mode === 'fly') {
       f.t += dt * f.sp;
       const cu = curveFor(f.P0, hit.clone().add(f.off), 0.16);
+      if (f.t >= 1 && hitMon) {
+        const q = hit.clone().add(f.off).addScaledVector(hitN, 0.02);
+        for (let k = 0; k < 3; k++) spawn(q, new THREE.Vector3(Math.random() - 0.5, Math.random(), Math.random() - 0.5).addScaledVector(hitN, 0.6), 0.03, 0.4, 2);
+        foam.splice(i, 1); continue;
+      }
       if (f.t >= 1) {
         f.mode = 'stick'; f.p = hit.clone().add(f.off).addScaledVector(hitN, 0.01); f.n = hitN.clone(); f.life = 0; f.r *= 1.25;
         if (foam.length < FMAX - 8) {
@@ -772,6 +877,10 @@ function frame(ts) {
   renderer.render(world, wcam);
   renderer.clearDepth();
   renderer.render(vscene, vcam);
+  {
+    const pxm = (VH / 2) / (Math.max(0.4, hitDist) * Math.tan(wcam.fov * D2R / 2)), grow = 1 + 0.14 * spray, F = FP[tool];
+    retRX = damp(retRX, clamp(F.rx * pxm * grow, 7, VW * 0.45), 16, dt); retRY = damp(retRY, clamp(F.ry * pxm * grow, 7, VH * 0.45), 16, dt);
+  }
   drawReticle();
   // adaptive resolution
   if (!window.__noAdapt && frames > 30 && frames < 400) { slowAcc += dt; slowN++; if (slowN === 90) { if (slowAcc / slowN > 1 / 38 && DPR > MIN_DPR) { DPR = Math.max(MIN_DPR, DPR - 0.5); layout(); } slowAcc = 0; slowN = 0; } }
@@ -780,16 +889,18 @@ function frame(ts) {
 // reticle as a tiny 2D overlay canvas
 const rc = document.createElement('canvas');
 rc.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none';
-document.body.insertBefore(rc, document.querySelector('.brand'));
+cv.after(rc);
 const rctx = rc.getContext('2d');
 function drawReticle() {
   const RD = Math.min(2, window.devicePixelRatio || 1);
   if (rc.width !== Math.round(VW * RD) || rc.height !== Math.round(VH * RD)) { rc.width = Math.round(VW * RD); rc.height = Math.round(VH * RD); rctx.setTransform(RD, 0, 0, RD, 0, 0); }
   rctx.clearRect(0, 0, VW, VH);
-  const x = VW / 2, y = VH / 2, r = firing ? 11 + Math.random() * 1.5 : 15;
-  rctx.lineWidth = 4; rctx.strokeStyle = 'rgba(10,14,30,0.55)'; rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.stroke();
-  rctx.lineWidth = 2; rctx.strokeStyle = 'rgba(255,255,255,0.92)'; rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.stroke();
-  rctx.fillStyle = '#fff'; rctx.beginPath(); rctx.arc(x, y, 2, 0, Math.PI * 2); rctx.fill();
+  if (G.state === 'title') return;
+  const x = VW / 2, y = VH / 2, j = firing ? Math.random() * 1.2 : 0, rx = retRX + j, ry = retRY + j;
+  const col = hitMon && G.state === 'play' ? 'rgba(255,224,138,0.95)' : 'rgba(255,255,255,0.92)';
+  rctx.lineWidth = 4; rctx.strokeStyle = 'rgba(10,14,30,0.5)'; rctx.beginPath(); rctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); rctx.stroke();
+  rctx.lineWidth = 2; rctx.strokeStyle = col; rctx.beginPath(); rctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); rctx.stroke();
+  rctx.fillStyle = col; rctx.beginPath(); rctx.arc(x, y, 2, 0, Math.PI * 2); rctx.fill();
 }
 
 layout();
@@ -800,14 +911,15 @@ setTimeout(() => document.getElementById('loading').remove(), 600);
 if (!window.__rec) requestAnimationFrame(frame);
 window.__ready = true;
 window.__demo = {
+  internals: () => ({ monsters, ZONES, FP, HALL, bayX, wcam, THREE, CLEAR_AT, renderer, G, surfaces }),
   set(o) {
-    if (o.attract) { attract = true; aT = 0; pill.classList.remove('off'); return; }
     endAttract();
     if (o.view) { lookYawT = o.view[0]; lookPitchT = o.view[1]; if (o.snap) { lookYaw = pYaw = o.view[0]; lookPitch = pPitch = o.view[1]; } }
     if (o.fire !== undefined) firing = o.fire;
     if (o.tool) setTool(o.tool);
     if (o.look) setLook(o.look);
   },
+  land(o) { if (o.pos) LAND.pos.set(...o.pos); if (o.rot) LAND.rot.set(...o.rot, 'YXZ'); if (o.pivot) LAND.pivot.set(...o.pivot); layout(); },
   port(o) { if (o.pos) PORT.pos.set(...o.pos); if (o.rot) PORT.rot.set(...o.rot, 'YXZ'); if (o.pivot) PORT.pivot.set(...o.pivot); if (o.tanH) PORT.tanH = o.tanH; layout(); },
   step(ms) { frame((now + ms / 1000) * 1000); },
   grab(label) {
@@ -822,7 +934,8 @@ window.__demo = {
     }
     return c.toDataURL('image/jpeg', 0.92);
   },
-  state: () => ({ firing, attract, yaw: +lookYawT.toFixed(4), pitch: +lookPitchT.toFixed(4), locked, plFailed, btn: fireBtn.dataset.on }),
+  game(cmd, i) { if (cmd === 'start') startGame(); else if (cmd === 'zone') { hideOverlays(); hud.top.hidden = false; enterZone(i, true); } else if (cmd === 'play') { setState('play'); } },
+  state: () => ({ nz: nozzleScreen(new THREE.Vector3()).toArray().slice(0, 2).map((v) => +v.toFixed(3)), corr: [+corrYaw.toFixed(3), +corrPitch.toFixed(3)], hd: +hitDist.toFixed(2), cam: wcam.position.toArray().map((v) => +v.toFixed(2)), rot: [+wcam.rotation.x.toFixed(3), +wcam.rotation.y.toFixed(3)], g: G.state, zone: G.zone, left: +G.left.toFixed(2), hp: monsters[G.zone].hp(), frac: +monsters[G.zone].frac().toFixed(4), hitMon: !!hitMon, firing, attract, yaw: +lookYawT.toFixed(4), pitch: +lookPitchT.toFixed(4), locked, plFailed, btn: fireBtn.dataset.on }),
   stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: DPR }),
 };
 </script>
